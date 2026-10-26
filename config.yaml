@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------
+# settings
+# Every feed below was checked and returned live items on 2026-10-25.
+# "outlet" is the name used for independence checks: two feeds with
+# the same outlet name count as ONE source.
+# ---------------------------------------------------------------
+feeds:
+  - {outlet: BBC News,     url: "https://feeds.bbci.co.uk/news/world/rss.xml"}
+  - {outlet: Al Jazeera,   url: "https://www.aljazeera.com/xml/rss/all.xml"}
+  - {outlet: The Guardian, url: "https://www.theguardian.com/world/rss"}
+  - {outlet: NPR,          url: "https://feeds.npr.org/1004/rss.xml"}
+  - {outlet: France 24,    url: "https://www.france24.com/en/rss"}
+  - {outlet: DW,           url: "https://rss.dw.com/rdf/rss-en-world"}
+  - {outlet: Sky News,     url: "https://feeds.skynews.com/feeds/rss/world.xml"}
+  - {outlet: CBS News,     url: "https://www.cbsnews.com/latest/rss/world"}
+  - {outlet: ABC News,     url: "https://abcnews.go.com/abcnews/internationalheadlines"}
+  - {outlet: New York Times, url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"}
+  - {outlet: Euronews,     url: "https://www.euronews.com/rss?level=theme&name=news"}
+  # Reuters and AP have no public RSS any more; these Google News searches
+  # return only their own articles (headline only, no summary).
+  - {outlet: Reuters,      url: "https://news.google.com/rss/search?q=site:reuters.com/world+when:1d&hl=en-US&gl=US&ceid=US:en"}
+  - {outlet: AP,           url: "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en"}
+
+# A story is only sent once at least this many DIFFERENT outlets report it.
+min_sources: 2
+
+# Ignore feed items older than this (hours). Keeps the first run from
+# sending yesterday's news.
+max_item_age_hours: 6
+
+# Clustering: how similar two headlines must be to count as the same story.
+#   min_overlap  = shared keywords / keywords of the shorter headline (0-1)
+#   min_shared   = minimum weighted shared keywords (names/places count double)
+clustering:
+  min_overlap: 0.34
+  min_shared: 4
+
+# Updates: an "UPDATE:" message is sent when a tracked story gets new reports
+# that add new numbers or at least this many new keywords, and at least
+# min_update_minutes have passed since the last message for that story.
+updates:
+  min_new_keywords: 4
+  min_update_minutes: 30
+  max_updates_per_story: 6
+
+max_messages_per_run: 5    # cap so one run never floods you
+max_summary_chars: 600     # length cap for each summary
+prune_days: 7              # forget stories not seen for this many days
+
+llm:
+  backend: ollama          # ollama | gemini | template   (env LLM_BACKEND overrides)
+  temperature: 0.3
+  timeout_seconds: 120
+  ollama:
+    url: "http://localhost:11434"     # env OLLAMA_URL overrides
+    model: "llama3.1:8b"              # env OLLAMA_MODEL overrides (qwen2.5:7b also works well)
+  gemini:
+    # env GEMINI_MODEL overrides. Tried in order; next one used on 404/429.
+    models: ["gemini-3.8-flash", "gemini-3.5-flash-lite"]
+
+files:
+  state: stories.json
+  # Optional: also append every message to a local file (ignored in quiet/CI mode).
+  # output: notes.md
+
+http:
+  user_agent: "Mozilla/5.0"
+  timeout_seconds: 20
+
+# Headlines containing any of these words are ignored (sports, horoscopes...).
+# The Reuters/AP Google News feeds include all sections, so this keeps them on world news.
+exclude_keywords: [NFL, NBA, MLB, NHL, "World Series", inning, touchdown, "Premier League", "Champions League",
+  "Ballon d'Or", "Top 25", quarterback, playoff, playoffs, horoscope, recipe, crossword, Wordle, "box office"]

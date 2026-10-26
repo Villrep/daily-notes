@@ -1,0 +1,10 @@
+.env
+stories.json
+stories.json.bak
+notes.md
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.log
+SETUP.md
